@@ -1,5 +1,6 @@
 from transformers import RobertaConfig
 from transformers import RobertaForMaskedLM
+from transformers.utils.dummy_pt_objects import RobertaModel
 from neuroprof.dataset import X86PerfFineTuneDataset
 import torch
 
@@ -7,7 +8,7 @@ if __name__ == '__main__':
     import argparse
     # args
     parser = argparse.ArgumentParser(description='Downstream')
-    parser.add_argument('--model', type=str, help='checkpoint dir')
+    parser.add_argument('--model', type=str, default='./pretrained_model/checkpoint-7552', help='checkpoint dir')
     args = parser.parse_args()
 
     # Set a configuration for our RoBERTa model
@@ -19,16 +20,16 @@ if __name__ == '__main__':
         type_vocab_size=1,
     )
     # Initialize the model from a configuration without pretrained weights
-    model = RobertaForMaskedLM(config=config).cuda()
+    model = RobertaForMaskedLM.from_pretrained(args.model)
     print('Num parameters: ', model.num_parameters())
 
     from transformers import RobertaTokenizerFast
     # Create the tokenizer from a trained one
-    tokenizer = RobertaTokenizerFast.from_pretrained(
-        'tokenizer_model', max_len=512)
+    tokenizer = RobertaTokenizerFast(
+        tokenizer_file='./byte-level-bpe.tokenizer.json')
 
     train_dataset = X86PerfFineTuneDataset(evaluate=False)
     eval_dataset = X86PerfFineTuneDataset(evaluate=True)
 
-    checkpoint = torch.load(args.model, map_location='cuda:0')
-    model.load_state_dict(checkpoint['model_state_dict'])
+    # checkpoint = torch.load(args.model, map_location='cuda:0')
+    # model.load_state_dict(checkpoint['model_state_dict'])

@@ -32,8 +32,8 @@ data_collator = DataCollatorForLanguageModeling(
 
 from transformers import Trainer, TrainingArguments
 
-TRAIN_EPOCHS = 10
-LEARNING_RATE = 5e-4
+TRAIN_EPOCHS = 32
+LEARNING_RATE = 2e-4
 TRAIN_BATCH_SIZE = 16
 VALID_BATCH_SIZE = 32
 
