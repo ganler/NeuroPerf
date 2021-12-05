@@ -3,3 +3,8 @@
 a.out
 DATASET
 perf.*
+leetcode
+pretrained_model
+
+*.json
+__pycache__

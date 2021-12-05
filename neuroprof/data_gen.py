@@ -114,8 +114,11 @@ def perf_datagen(program):
 
 if __name__ == '__main__':
     __DATASET__ = 'DATASET'
-    if not os.path.exists(__DATASET__):
+    if not os.path.isdir(__DATASET__):
         os.mkdir(__DATASET__)
+
+    if not os.path.isdir(f'{__DATASET__}/pickle'):
+        os.mkdir(f'{__DATASET__}/pickle')
 
     import argparse
 
@@ -148,6 +151,6 @@ if __name__ == '__main__':
                 continue
 
             for d in data:
-                with open(f'{__DATASET__}/{uuid.uuid4()}.pkl', 'wb') as f:
+                with open(f'{__DATASET__}/pickle/{uuid.uuid4()}.pkl', 'wb') as f:
                     pickle.dump(d, f)
                     progress.update(task, advance=1)
