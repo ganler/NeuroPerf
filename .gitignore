@@ -5,6 +5,7 @@ DATASET
 perf.*
 leetcode
 pretrained_model
+downstream_model
 
 *.json
 __pycache__
