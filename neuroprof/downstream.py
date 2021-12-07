@@ -4,6 +4,7 @@ from neuroprof.data_gen import PerfData
 import os
 from datetime import datetime
 
+from transformers import RobertaConfig
 from transformers import RobertaForMaskedLM
 from rich.progress import Progress
 
@@ -12,22 +13,41 @@ from torch.utils.data import DataLoader
 from torch import nn
 import torch
 
+
+def new_model():
+    # Set a configuration for our RoBERTa model
+    config = RobertaConfig(
+        vocab_size=2048,
+        max_position_embeddings=514,
+        num_attention_heads=12,
+        num_hidden_layers=6,
+        type_vocab_size=1,
+    )
+    # Initialize the model from a configuration without pretrained weights
+    return RobertaForMaskedLM(config=config)
+
+
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='Downstream')
+    parser = argparse.ArgumentParser(description='Downstream task training')
     parser.add_argument(
         '--model', type=str, default='./pretrained_model/checkpoint-7552', help='checkpoint dir')
-    parser.add_argument('--epoch', type=int, default=8, help='epoch')
-    parser.add_argument('--lr', type=float, default=1e-5, help='epoch')
+    parser.add_argument('--epoch', type=int, default=10, help='epoch')
+    parser.add_argument('--lr', type=float, default=1e-5, help='learning rate')
     parser.add_argument('--save_dir', type=str, default='downstream_model',
                         help='path to save the downstream model')
     parser.add_argument('--batch_size', type=int,
                         default=16, help='batch size')
     parser.add_argument('--log_freq', type=int,
-                        default=200, help='sample size')
+                        default=100, help='sample size')
     args = parser.parse_args()
 
-    model = RobertaForMaskedLM.from_pretrained(args.model).cuda()
+    if args.model == 'None':
+        print('Training downstream task w/o pre-training...')
+
+    model = RobertaForMaskedLM.from_pretrained(
+        args.model) if args.model != 'None' else new_model()
+    model = model.cuda()
     model.train()
 
     from transformers import RobertaTokenizerFast
@@ -107,5 +127,8 @@ if __name__ == '__main__':
                             'AvgTokenDistErr/eval', distance_err / n_total, n_progress)
                     running_loss = 0.0
 
+    dirname = f'checkpoint-{n_epoch * len(train_loader)}'
+    if args.model == 'None':
+        dirname += '-scratch'
     model.save_pretrained(
-        os.path.join(args.save_dir, f'checkpoint-{n_epoch * len(train_loader)}'))
+        os.path.join(args.save_dir, dirname))
